@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SocialMediaMention, FilterState } from '../types/data';
 
-// Initialize the Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -31,12 +30,8 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
 
     // Apply sorting
     if (filters.sortBy) {
-      const sortColumn = filters.sortBy === 'estimated_views' ? 'Estimated Views' : 
-                        filters.sortBy === 'post_date' ? 'Date' : 
-                        'Engagement';
-      query = query.order(sortColumn, { ascending: filters.sortDirection === 'asc' });
+      query = query.order(filters.sortBy, { ascending: filters.sortDirection === 'asc' });
     } else {
-      // Default sort by date
       query = query.order('Date', { ascending: false });
     }
 
@@ -47,29 +42,7 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
       throw error;
     }
 
-    if (!data) {
-      console.log('No data returned from Supabase');
-      return [];
-    }
-
-    console.log('Raw data from Supabase:', data); // Debug log
-
-    // Transform the data to match our expected format
-    return data.map(item => ({
-      id: item.URL || String(Math.random()),
-      platform: item.Source || 'Unknown',
-      username: item.Influencer || 'Unknown',
-      post_date: item.Date || '',
-      content: item.Headline || '',
-      estimated_views: parseInt(item['Estimated Views'] || '0', 10),
-      likes: parseInt(item.Engagement || '0', 10),
-      shares: parseInt(item['Twitter Social Echo'] || '0', 10),
-      comments: 0,
-      country: item.Country || 'Unknown',
-      sentiment: item.Sentiment || 'Neutral',
-      project: 'PALF',
-      url: item.URL || '#'
-    }));
+    return data || [];
 
   } catch (error) {
     console.error('Error fetching social media data:', error);
@@ -86,7 +59,6 @@ export async function fetchUniqueCountries(): Promise<string[]> {
 
     if (error) throw error;
 
-    // Filter unique non-null values and sort alphabetically
     const uniqueCountries = [...new Set(data.map(item => item.Country))]
       .filter(Boolean)
       .sort();
