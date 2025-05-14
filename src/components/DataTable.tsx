@@ -2,7 +2,7 @@ import React from 'react';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import { motion } from 'framer-motion';
 import { SocialMediaMention } from '../types/data';
-import { ExternalLink, Globe, Calendar, Newspaper } from 'lucide-react';
+import { ExternalLink, Globe, Calendar, Newspaper, Share2, Heart, MessageCircle, Eye, Hash, User } from 'lucide-react';
 
 interface DataTableProps {
   data: SocialMediaMention[];
@@ -14,7 +14,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
     () => [
       {
         Header: 'Date',
-        accessor: 'post_date',
+        accessor: 'Date',
         Cell: ({ value }: { value: string }) => (
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-500" />
@@ -24,7 +24,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
       },
       {
         Header: 'Headline',
-        accessor: 'content',
+        accessor: 'Headline',
         Cell: ({ value }: { value: string }) => (
           <div className="flex items-center gap-2">
             <Newspaper className="h-4 w-4 text-gray-500" />
@@ -34,14 +34,24 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
       },
       {
         Header: 'Source',
-        accessor: 'platform',
+        accessor: 'Source',
         Cell: ({ value }: { value: string }) => (
           <div className="font-medium">{value}</div>
         ),
       },
       {
+        Header: 'Influencer',
+        accessor: 'Influencer',
+        Cell: ({ value }: { value: string }) => (
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-gray-500" />
+            {value}
+          </div>
+        ),
+      },
+      {
         Header: 'Country',
-        accessor: 'country',
+        accessor: 'Country',
         Cell: ({ value }: { value: string }) => (
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-gray-500" />
@@ -50,26 +60,61 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
         ),
       },
       {
-        Header: 'Estimated Views',
-        accessor: 'estimated_views',
-        Cell: ({ value }: { value: number }) => (
-          <div className="text-right font-medium">
-            {value.toLocaleString()}
+        Header: 'Language',
+        accessor: 'Language',
+      },
+      {
+        Header: 'Reach',
+        accessor: 'Reach',
+        Cell: ({ value }: { value: string }) => (
+          <div className="flex items-center gap-2">
+            <Eye className="h-4 w-4 text-gray-500" />
+            {value}
           </div>
         ),
+      },
+      {
+        Header: 'Social Echo',
+        columns: [
+          {
+            Header: 'Twitter',
+            accessor: 'Twitter Social Echo',
+            Cell: ({ value }: { value: string }) => (
+              <div className="flex items-center gap-2">
+                <Share2 className="h-4 w-4 text-gray-500" />
+                {value}
+              </div>
+            ),
+          },
+          {
+            Header: 'Facebook',
+            accessor: 'Facebook Social Echo',
+            Cell: ({ value }: { value: string }) => (
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-gray-500" />
+                {value}
+              </div>
+            ),
+          },
+          {
+            Header: 'Reddit',
+            accessor: 'Reddit Social Echo',
+            Cell: ({ value }: { value: string }) => (
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-gray-500" />
+                {value}
+              </div>
+            ),
+          },
+        ],
       },
       {
         Header: 'Engagement',
-        accessor: 'likes',
-        Cell: ({ value }: { value: number }) => (
-          <div className="text-right font-medium">
-            {value.toLocaleString()}
-          </div>
-        ),
+        accessor: 'Engagement',
       },
       {
         Header: 'Sentiment',
-        accessor: 'sentiment',
+        accessor: 'Sentiment',
         Cell: ({ value }: { value: string }) => {
           const colorClass = 
             value === 'Positive' ? 'bg-green-100 text-green-800 border-green-300' :
@@ -84,8 +129,18 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
         },
       },
       {
+        Header: 'Key Phrases',
+        accessor: 'Key Phrases',
+        Cell: ({ value }: { value: string }) => (
+          <div className="flex items-center gap-2">
+            <Hash className="h-4 w-4 text-gray-500" />
+            <div className="max-w-xs truncate">{value}</div>
+          </div>
+        ),
+      },
+      {
         Header: 'Link',
-        accessor: 'url',
+        accessor: 'URL',
         Cell: ({ value }: { value: string }) => (
           <a 
             href={value}
