@@ -19,8 +19,8 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
 
     // Apply date range filter if provided
     if (filters.dateRange.startDate && filters.dateRange.endDate) {
-      query = query.gte('Date', filters.dateRange.startDate.toISOString())
-                  .lte('Date', filters.dateRange.endDate.toISOString());
+      query = query.gte('Date', filters.dateRange.startDate.toISOString().split('T')[0])
+                  .lte('Date', filters.dateRange.endDate.toISOString().split('T')[0]);
     }
 
     // Apply country filter if provided
@@ -37,11 +37,8 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
     if (filters.sortBy) {
       const sortColumn = filters.sortBy === 'estimated_views' ? 'Estimated Views' : 
                         filters.sortBy === 'post_date' ? 'Date' : 
-                        'Engagement';
+                        filters.sortBy === 'likes' ? 'Engagement' : 'Date';
       query = query.order(sortColumn, { ascending: filters.sortDirection === 'asc' });
-    } else {
-      // Default sort by estimated views
-      query = query.order('Estimated Views', { ascending: false });
     }
 
     const { data, error } = await query;
@@ -50,17 +47,17 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
 
     // Transform the data to match our expected format
     return (data || []).map(item => ({
-      id: item.URL, // Using URL as a unique identifier since there's no id column
-      platform: 'Unknown', // Platform info not available in the data
-      username: item.Source || 'Unknown',
+      id: item.URL || Math.random().toString(), // Fallback to random ID if URL is missing
+      platform: item.Source || 'Unknown',
+      username: item.Influencer || 'Unknown',
       post_date: item.Date,
       content: item.Headline || '',
       estimated_views: parseInt(item['Estimated Views'] || '0', 10),
       likes: parseInt(item.Engagement || '0', 10),
-      shares: 0, // Not available in the data
-      comments: 0, // Not available in the data
+      shares: parseInt(item['Social Echo'] || '0', 10),
+      comments: 0,
       country: item.Country || 'Unknown',
-      sentiment: item.Sentiment || 'Unknown',
+      sentiment: (item.Sentiment as 'Positive' | 'Neutral' | 'Negative') || 'Neutral',
       project: 'PALF',
       url: item.URL || ''
     }));
@@ -75,13 +72,14 @@ export async function fetchUniqueCountries(): Promise<string[]> {
   try {
     const { data, error } = await supabase
       .from('DATA_PALF_PR')
-      .select('Country');
+      .select('Country')
+      .not('Country', 'is', null);
 
     if (error) throw error;
 
-    // Manually filter for unique values
-    const uniqueCountries = [...new Set(data?.map(item => item.Country))];
-    return uniqueCountries.filter(Boolean);
+    // Filter unique non-null values and sort alphabetically
+    const uniqueCountries = [...new Set(data.map(item => item.Country))];
+    return uniqueCountries.sort();
 
   } catch (error) {
     console.error('Error fetching unique countries:', error);
