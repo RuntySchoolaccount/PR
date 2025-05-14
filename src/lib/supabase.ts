@@ -5,10 +5,6 @@ import type { SocialMediaMention, FilterState } from '../types/data';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function fetchSocialMediaData(filters: FilterState): Promise<SocialMediaMention[]> {
@@ -37,29 +33,42 @@ export async function fetchSocialMediaData(filters: FilterState): Promise<Social
     if (filters.sortBy) {
       const sortColumn = filters.sortBy === 'estimated_views' ? 'Estimated Views' : 
                         filters.sortBy === 'post_date' ? 'Date' : 
-                        filters.sortBy === 'likes' ? 'Engagement' : 'Date';
+                        'Engagement';
       query = query.order(sortColumn, { ascending: filters.sortDirection === 'asc' });
+    } else {
+      // Default sort by date
+      query = query.order('Date', { ascending: false });
     }
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.log('No data returned from Supabase');
+      return [];
+    }
+
+    console.log('Raw data from Supabase:', data); // Debug log
 
     // Transform the data to match our expected format
-    return (data || []).map(item => ({
-      id: item.URL || Math.random().toString(), // Fallback to random ID if URL is missing
+    return data.map(item => ({
+      id: item.URL || String(Math.random()),
       platform: item.Source || 'Unknown',
       username: item.Influencer || 'Unknown',
-      post_date: item.Date,
+      post_date: item.Date || '',
       content: item.Headline || '',
       estimated_views: parseInt(item['Estimated Views'] || '0', 10),
       likes: parseInt(item.Engagement || '0', 10),
-      shares: parseInt(item['Social Echo'] || '0', 10),
+      shares: parseInt(item['Twitter Social Echo'] || '0', 10),
       comments: 0,
       country: item.Country || 'Unknown',
-      sentiment: (item.Sentiment as 'Positive' | 'Neutral' | 'Negative') || 'Neutral',
+      sentiment: item.Sentiment || 'Neutral',
       project: 'PALF',
-      url: item.URL || ''
+      url: item.URL || '#'
     }));
 
   } catch (error) {
@@ -78,8 +87,11 @@ export async function fetchUniqueCountries(): Promise<string[]> {
     if (error) throw error;
 
     // Filter unique non-null values and sort alphabetically
-    const uniqueCountries = [...new Set(data.map(item => item.Country))];
-    return uniqueCountries.sort();
+    const uniqueCountries = [...new Set(data.map(item => item.Country))]
+      .filter(Boolean)
+      .sort();
+
+    return uniqueCountries;
 
   } catch (error) {
     console.error('Error fetching unique countries:', error);

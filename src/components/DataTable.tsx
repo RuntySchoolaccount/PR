@@ -1,9 +1,8 @@
 import React from 'react';
 import { useTable, useSortBy, usePagination } from 'react-table';
-import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { SocialMediaMention } from '../types/data';
-import { ExternalLink, ThumbsUp, MessageSquare, Share2, Globe } from 'lucide-react';
+import { ExternalLink, Globe, Calendar, Newspaper } from 'lucide-react';
 
 interface DataTableProps {
   data: SocialMediaMention[];
@@ -17,30 +16,35 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
         Header: 'Date',
         accessor: 'post_date',
         Cell: ({ value }: { value: string }) => (
-          <div>{value}</div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            {value}
+          </div>
         ),
       },
       {
         Header: 'Headline',
         accessor: 'content',
         Cell: ({ value }: { value: string }) => (
-          <div className="max-w-md truncate">{value}</div>
+          <div className="flex items-center gap-2">
+            <Newspaper className="h-4 w-4 text-gray-500" />
+            <div className="max-w-md truncate">{value}</div>
+          </div>
         ),
       },
       {
         Header: 'Source',
         accessor: 'platform',
-      },
-      {
-        Header: 'Influencer',
-        accessor: 'username',
+        Cell: ({ value }: { value: string }) => (
+          <div className="font-medium">{value}</div>
+        ),
       },
       {
         Header: 'Country',
         accessor: 'country',
         Cell: ({ value }: { value: string }) => (
           <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
+            <Globe className="h-4 w-4 text-gray-500" />
             {value}
           </div>
         ),
@@ -49,20 +53,24 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
         Header: 'Estimated Views',
         accessor: 'estimated_views',
         Cell: ({ value }: { value: number }) => (
-          <div className="text-right">{value.toLocaleString()}</div>
+          <div className="text-right font-medium">
+            {value.toLocaleString()}
+          </div>
         ),
       },
       {
         Header: 'Engagement',
         accessor: 'likes',
         Cell: ({ value }: { value: number }) => (
-          <div className="text-right">{value.toLocaleString()}</div>
+          <div className="text-right font-medium">
+            {value.toLocaleString()}
+          </div>
         ),
       },
       {
         Header: 'Sentiment',
         accessor: 'sentiment',
-        Cell: ({ value }: { value: 'Positive' | 'Neutral' | 'Negative' }) => {
+        Cell: ({ value }: { value: string }) => {
           const colorClass = 
             value === 'Positive' ? 'bg-green-100 text-green-800 border-green-300' :
             value === 'Neutral' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
@@ -166,7 +174,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
             ))}
           </thead>
           <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200">
-            {page.map((row, i) => {
+            {page.map(row => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} className="hover:bg-gray-50">
@@ -185,7 +193,6 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
         </table>
       </div>
       
-      {/* Pagination */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="flex justify-between w-full">
           <div className="flex items-center">
