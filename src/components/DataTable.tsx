@@ -3,7 +3,7 @@ import { useTable, useSortBy, usePagination } from 'react-table';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { SocialMediaMention } from '../types/data';
-import { ExternalLink, ThumbsUp, MessageSquare, Share2 } from 'lucide-react';
+import { ExternalLink, ThumbsUp, MessageSquare, Share2, Globe } from 'lucide-react';
 
 interface DataTableProps {
   data: SocialMediaMention[];
@@ -14,32 +14,39 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Platform',
-        accessor: 'platform',
-        Cell: ({ value }: { value: string }) => (
-          <div className="font-medium">{value}</div>
-        ),
-      },
-      {
         Header: 'Date',
         accessor: 'post_date',
         Cell: ({ value }: { value: string }) => (
-          <div>{format(new Date(value), 'MMM d, yyyy')}</div>
+          <div>{value}</div>
         ),
       },
       {
-        Header: 'Username',
-        accessor: 'username',
-      },
-      {
-        Header: 'Content',
+        Header: 'Headline',
         accessor: 'content',
         Cell: ({ value }: { value: string }) => (
           <div className="max-w-md truncate">{value}</div>
         ),
       },
       {
-        Header: 'Views',
+        Header: 'Source',
+        accessor: 'platform',
+      },
+      {
+        Header: 'Influencer',
+        accessor: 'username',
+      },
+      {
+        Header: 'Country',
+        accessor: 'country',
+        Cell: ({ value }: { value: string }) => (
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            {value}
+          </div>
+        ),
+      },
+      {
+        Header: 'Estimated Views',
         accessor: 'estimated_views',
         Cell: ({ value }: { value: number }) => (
           <div className="text-right">{value.toLocaleString()}</div>
@@ -47,27 +54,10 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
       },
       {
         Header: 'Engagement',
-        id: 'engagement',
-        Cell: ({ row }: { row: { original: SocialMediaMention } }) => (
-          <div className="flex items-center gap-3">
-            <span className="flex items-center">
-              <ThumbsUp className="h-4 w-4 mr-1 text-blue-500" />
-              {row.original.likes.toLocaleString()}
-            </span>
-            <span className="flex items-center">
-              <MessageSquare className="h-4 w-4 mr-1 text-green-500" />
-              {row.original.comments.toLocaleString()}
-            </span>
-            <span className="flex items-center">
-              <Share2 className="h-4 w-4 mr-1 text-purple-500" />
-              {row.original.shares.toLocaleString()}
-            </span>
-          </div>
+        accessor: 'likes',
+        Cell: ({ value }: { value: number }) => (
+          <div className="text-right">{value.toLocaleString()}</div>
         ),
-      },
-      {
-        Header: 'Country',
-        accessor: 'country',
       },
       {
         Header: 'Sentiment',
